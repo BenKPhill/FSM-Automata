@@ -2,9 +2,9 @@ def Sequence_States(State, num_steps, rule, dimension):
     machine_epsilon = np.finfo(float).eps
     data_set = []  # Initialize an empty list to store the data
     entropy_list = []  # List to store entropy values over time
-    partitions_birth = partitions_by_birth(rule)
-    partitions_sum = partitions_by_sum()
-    partitions_all = partitions_by_all()
+    partitions_birth = partitions_by_birth1d(rule)
+    partitions_sum = partitions_by_sum1d()
+    partitions_all = partitions_by_all1d()
     
     for t in range(num_steps):  
         data = []  # Initialize dataset for this time step
