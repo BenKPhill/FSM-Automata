@@ -71,8 +71,7 @@ def extract_active_region(grid): #Function to consider only sub-array where the 
     ones_indices = np.argwhere(grid == 1) #Locates indices of all ones in the array
     
     if ones_indices.size == 0: #Checks if array is all zeros
-        np.zeros_like(grid) #Creates a grid of zeros 
-    return grid  #returns the grid of zeros as the active region
+        return np.zeros((1, 1), dtype=int)  # Return a minimal inactive region
        
     # Find the bounds of the active region
     min_row, min_col = ones_indices.min(axis=0) #Bottom left corner of the active array based on the minimum one index
