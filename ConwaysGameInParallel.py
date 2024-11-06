@@ -14,13 +14,13 @@ import traceback
 
 #pdb.set_trace()
 class Automata: #Define the automata class
-    def __init__(self, states, alphabet, transition_function, initial_state, final_states): #Automata instantiation method 
-        self.states = states #The possible states of the automata (All are final for cellular automata representation)
-        self.alphabet = alphabet #The input alphabet (0,1) in our case
-        self.transition_function = transition_function #The cellular automata rule
-        self.initial_state = initial_state #O state, only non-final state
-        self.final_states = final_states #Equals the states in our case minus O
-        self.current_state = initial_state #resets the automata after each input string
+    def __init__(self, states, alphabet, transition_function, initial_state, final_states):
+        self.states = states  #Declare object attributes
+        self.alphabet = alphabet
+        self.transition_function = transition_function
+        self.initial_state = initial_state
+        self.final_states = final_states
+        self.current_state = initial_state
     
     def transition(self, symbol):#Define transition method acting on self, and the input symbol
         if (self.current_state, symbol) in self.transition_function:   #If the symbol has a valid state transition
@@ -60,33 +60,34 @@ conways_game = { #Transition function, (state, input symbol):next state
     ("D03",1):"A01",
     ("D03",0):"D03",
     ("A01",1):"D13",
+    ("A01",0):"A01"
     } 
 
-Conways_Game =  Automata(states1, alphabet, conways_game, initial_state, final_states1) #Declaration of Conway's game object.
+Conways_Game =  Automata(states1, alphabet, conways_game, initial_state, final_states1)
 
-def extract_active_region(grid): #Function to consider only sub-array where the subarray is defined as the smallest square grid containing all ones.
-    grid = np.array(grid) #makes the grid an np.array
-    rows, cols = grid.shape #Declares two variables assigned to the length and width of the whole array
+def extract_active_region(grid):
+    grid = np.array(grid)
+    rows, cols = grid.shape
     # Find the indices where "1"s are located
-    ones_indices = np.argwhere(grid == 1) #Locates indices of all ones in the array
+    ones_indices = np.argwhere(grid == 1)
     
-    if ones_indices.size == 0: #Checks if array is all zeros
-        return np.zeros((1, 1), dtype=int)  # Return a minimal inactive region
+    if ones_indices.size == 0:
+        return np.zeros((3, 3), dtype=int)  # Return a minimal inactive region
        
     # Find the bounds of the active region
-    min_row, min_col = ones_indices.min(axis=0) #Bottom left corner of the active array based on the minimum one index
-    max_row, max_col = ones_indices.max(axis=0) #Top right corner of the active array based on the maximum one index
+    min_row, min_col = ones_indices.min(axis=0)
+    max_row, max_col = ones_indices.max(axis=0)
     
     # Extract and return the bounding box containing all "1"s
     active_region = grid[min_row:max_row + 1, min_col:max_col + 1]
     return active_region
 
-def expand_grid(grid, expansion_size = 1): #Function to expand grid by a given amount, defaulted at 1.
-    grid = np.array(grid) #makes the array an np array
-    original_shape = grid.shape #creates a pair of length width variables 
+def expand_grid(grid, expansion_size = 1):
+    grid = np.array(grid)
+    original_shape = grid.shape
     
-    new_shape = (original_shape[0] + 2 * expansion_size, original_shape[1] + 2 * expansion_size) #Adds the expansion size to the row size and the column size.
-    expanded_grid = np.zeros(new_shape, dtype=grid.dtype) #Makes a grid of zeros in that shape
+    new_shape = (original_shape[0] + 2 * expansion_size, original_shape[1] + 2 * expansion_size)
+    expanded_grid = np.zeros(new_shape, dtype=grid.dtype)
 
     # Place the original grid in the center of the new expanded grid
     expanded_grid[expansion_size:expansion_size + original_shape[0], 
@@ -143,11 +144,11 @@ def next_state(System_state, grid_size, dimension, rule): #Define next state fun
 
     return value_stateN  # Return the value state (What the grid actually looks like)
 
-def submatrix2d(grid, submatrix_size): #A function to create the local neighborhood matrices of each cell in the grid
+def submatrix2d(grid, submatrix_size):
     submatrices = []
     rows = len(grid)
     cols = len(grid[0])
-    sub_rows, sub_cols = submatrix_size 
+    sub_rows, sub_cols = submatrix_size
     
     # Iterate over the grid and extract submatrices
     for i in range(rows - sub_rows + 1):
@@ -194,9 +195,17 @@ def dependency_form(value_state, kernel_width, dependency, dimension): #Define t
              
     return System_StateN
 
-def kolmogorov_complexity(string: str) -> dict: #Function to estimate the Kolmogorov complexity
-    binary_str = ''.join(map(str, string)) #turns the array [0,0,1,..] into a binary string 001...
-    # Convert the string to byte
+def partitions_by_all2d():
+    partitions = {}
+    for i in range(512):
+        binary_str = format(i, '09b')  # Create a binary string of length 9
+        partition = [int(bit) for bit in binary_str]  # Convert each bit to an integer
+        partitions[i] = partition  # Assign the binary vector to the dictionary with key i
+    return partitions
+
+def kolmogorov_complexity(string: str) -> dict:
+    binary_str = ''.join(map(str, string))
+    # Convert the string to bytes
     data = binary_str.encode('utf-8')
     
     # Compress using zlib (gzip), bz2, and lzma
@@ -208,7 +217,7 @@ def kolmogorov_complexity(string: str) -> dict: #Function to estimate the Kolmog
     # Return the size of the compressed data as an estimate of Kolmogorov complexity
     return average_compressed_size
 
-def lempel_ziv_complexity(binary_sequence): #Function for finding Lemple-Ziv Complexity stolen from an article I will need to cite and figure out
+def lempel_ziv_complexity(binary_sequence):
     """Lempel-Ziv complexity for a binary sequence, in simple Python code."""
     u, v, w = 0, 1, 1
     v_max = 1
@@ -237,42 +246,42 @@ def lempel_ziv_complexity(binary_sequence): #Function for finding Lemple-Ziv Com
                 v = 1
     return complexity
 
-def Sequence_States(State, num_steps, rule, dimension): #Main function that performs the automata operation over a number of steps
+def Sequence_States(State, num_steps, rule, dimension): 
     data_set = []  # Initialize an empty list to store the data
     entropy_list = []  # List to store entropy values over time
-    growth = 0 #This is a counter to determine how much the automata naturally expands.
-    phase = set((pos, tuple(config)) for pos, config in enumerate(State)) #This creates a set (no repeats) of tuples of the position of a cell and its dependency vector (phase space)
-    initial_entropy = math.log2(len(phase)) #The log_2 of the phase space volume (or length) is the definition of Boltzmann Entropy (A physics concept)
-    k = 1 / initial_entropy #Boltzmann entropy has a constant, we create a constant such that the entropy begins at 1
-    print(k) #Print the constant (should be the log_2(size of the initial outer array))
-    entropy_grow = 0 #cant remember dont think important
-    for t in range(num_steps): #iterates over how long we want the automata to run
-        print(f"k: {k}") #prints k at each time step (it was getting lost at the top otherwise)
+    growth = 0
+    phase = set((pos, tuple(config)) for pos, config in enumerate(State))
+    initial_entropy = math.log2(len(phase))
+    k = 1 / initial_entropy
+    print(k)
+    entropy_grow = 0
+    for t in range(num_steps): 
+        print(f"k: {k}")
         data = []  # Initialize dataset for this time step
         value_stateN = next_state(State, 5, 2, rule) # Get next state from FSM
-        value_stateN1 = extract_active_region(value_stateN) #Extracts the region of ones from the system
+        value_stateN1 = extract_active_region(value_stateN)
         #print(f"value state for complexity: {value_stateN}")
-        if dimension == 2: #if is only kept here as I stole this from the larger mother code
-            value_stateConcat = list(itertools.chain.from_iterable(value_stateN1)) #Turns the whole 2d array into a binary string to be processed
-            complexity_lz2d = lempel_ziv_complexity(value_stateConcat)   #determine complexity of active region
-            complexity_k2d = kolmogorov_complexity(value_stateConcat)                  
-#        print(f"Next state after FSM at t = {t+1}: {value_stateN}")
-        print(f"value_stateN1_len: {len(value_stateN1)}") #Keeps track of the relative sizes of inner and outer grids (N1 inner, N outer)
+        if dimension == 2:
+            value_stateConcat = list(itertools.chain.from_iterable(value_stateN1))
+            complexity_lz2d = lempel_ziv_complexity(value_stateConcat)   
+            complexity_k2d = kolmogorov_complexity(value_stateConcat)                   
+        print(f" {t+1}")
+        print(f"value_stateN1_len: {len(value_stateN1)}")
         print(f"value_stateN_len: {len(value_stateN)}")
-        if len(value_stateN1) == len(value_stateN): #Checks to see if the active region has reaches the same size as the outer grid
-            value_stateN = expand_grid(value_stateN) #Expands the whole thing if so
-            growth += 1 #Growth counter increases by 1
+        if len(value_stateN1) == len(value_stateN):
+            value_stateN = expand_grid(value_stateN)
+            growth += 1
         print(f"value_state_len: {len(value_stateN)}")
         DependencyN = dependency_form(value_stateN, 3, "S", 2)  # Get dependency form of the value state
-        Phase = dependency_form(value_stateN1, 3, "S", 2) #Determines the current phase space by the dependency form of current grid
-        new_phase_entries = set((pos, tuple(config)) for pos, config in enumerate(Phase)) #notes any tuples that were produced in the step
-        phase.update(new_phase_entries) #Adds new tuples to the set
-        boltzmann_entropy = k * math.log2(len(phase)) #Calculates Boltzmann entropy of updates set
-        print(boltzmann_entropy)    #prints it
-        State = DependencyN #Updates the state to the dependency to be run again
+        Phase = dependency_form(value_stateN1, 3, "S", 2)
+        new_phase_entries = set((pos, tuple(config)) for pos, config in enumerate(Phase))
+        phase.update(new_phase_entries)
+        boltzmann_entropy = k * math.log2(len(phase))
+        print(boltzmann_entropy)      
+        State = DependencyN
 
         # For each element in the current state, create a data point
-        for i in range(len(State)): #Tracks the count of all states for Shannon entropy calculation (I think this mightve been for the 1d automata)
+        for i in range(len(State)): 
             if i < len(State): 
                 data.append({
                     'time': t,
@@ -296,10 +305,10 @@ def Sequence_States(State, num_steps, rule, dimension): #Main function that perf
         state_counts['probability'] = state_counts['count'] / total_states
         
         # Calculate entropy for this time step
-        entropy = -np.sum(state_counts['probability'] * np.log2(state_counts['probability'] + 1e-10))  #Shannon entropy calculation
+        entropy = -np.sum(state_counts['probability'] * np.log2(state_counts['probability'] + 1e-10))  
         entropy_grow += entropy
                
-        entropy_list.append({ #Creates a list of all variables at every step.
+        entropy_list.append({
             'time': t,
             'entropy_states': entropy,
             'complexity_serieslz2d': complexity_lz2d,
@@ -310,63 +319,65 @@ def Sequence_States(State, num_steps, rule, dimension): #Main function that perf
             })
 
     
-    # Return the data set as a list
+    # Return the data set as a DataFrame and the entropy evolution over time
     return entropy_list
 
-def random_inside_larger2d(outer_size, inner_size): #Function to create a square of randomly distributed ones and zeros inside a larger array of zeros
-    grid_of_random = [[0]*inner_size]*inner_size #Initializes a grid of zeros set to the size inner_size*inner_size
+def random_inside_larger2d(outer_size, inner_size):
+    grid_of_random = [[0]*inner_size]*inner_size
     #print(value_state_stoch2d)
-    for i in range(inner_size): #Over all indices in generates grid
+    for i in range(inner_size):
         for j in range(inner_size):
-            random_digit = random.randint(0, 1) #Generates a (normal?) distribution of ones and zeros
-            grid_of_random[i][j] = random_digit #Updates that index with the one or zero
+            random_digit = random.randint(0, 1)
+            grid_of_random[i][j] = random_digit
             
-    outer_grid = np.zeros((outer_size,outer_size), dtype = int) #Creates an array of zeros of size outer_size*outer_size
+    outer_grid = np.zeros((outer_size,outer_size), dtype = int)
     
-    start_x = (outer_size - inner_size) // 2 #these find the indices of the edges of where the random array will go
+    start_x = (outer_size - inner_size) // 2
     start_y = (outer_size - inner_size) // 2
 
-    outer_grid[start_x:start_x + inner_size, start_y:start_y + inner_size] = grid_of_random #places the random swaure at those indices and returns
+    outer_grid[start_x:start_x + inner_size, start_y:start_y + inner_size] = grid_of_random
 
     return outer_grid
 
-def run_simulation_on_initial(inner_size, num_steps, rule, dimension): #Runs an automata of a given inner size 
-    outer_size = inner_size + 2 #For our purposes the outersize will be initialized at two larger than the smaller (gives some breathing room at initial steps)
-    value_state_stoch2dp = random_inside_larger2d(outer_size, inner_size) #Creates an array of outer zeros and inner random
-    State = dependency_form(value_state_stoch2dp, 3, "S", 2) #Generates teh dependency form of that grid
-    return Sequence_States(State, num_steps, rule, dimension) #runs the automata
+def run_simulation_on_initial(inner_size, num_steps, rule, dimension):
+    outer_size = inner_size + 2
+    value_state_stoch2dp = random_inside_larger2d(outer_size, inner_size)
+    State = dependency_form(value_state_stoch2dp, 3, "S", 2)
+    return Sequence_States(State, num_steps, rule, dimension)
 
-def run_parallel_simulations(inner_size_range, num_steps, rule, dimension, max_workers=4): #This stuff I hardly understand
-    results = [] #Creates an array to hold our various results
+def run_parallel_simulations(inner_size_range, num_steps, rule, dimension, max_workers=5, repeat = 10):
+    results = []
     with ThreadPoolExecutor(max_workers=max_workers) as executor:  # Use ThreadPoolExecutor
         futures = [
-            executor.submit(run_simulation_on_initial, inner_size, num_steps, rule, dimension) #Runs the automata with max workers
-            for inner_size in inner_size_range #runs over the range of inner sizes (want to find lower emergence bound as there seems to be a size at which things take off)
+            executor.submit(run_simulation_on_initial, inner_size, num_steps, rule, dimension)
+            for inner_size in inner_size_range
+            for _ in range(repeat)
         ]
-        for future in futures: #over all simulations in inner size range
-            results.append(future.result())  #append the list to the results array
-    return results 
+        for future in futures:
+            results.append(future.result())
+    return results
 
-all_dfs = [] #An array to hold our many lists 
-inner_size_range = range(1, 33, 2) #Sets the range of our computation (This is what needs changed)
-num_steps = 200 #Number of steps
-rule = Conways_Game #The automata in use, I will add more when we run some batches on this
-dimension = 2 #Dimension of the automata
-inner_size = 25 #Sets initial size if we want to test simulation before running
+all_dfs = []
+inner_size_range = [67]
+num_steps = 75
+rule = Conways_Game
+dimension = 2
+inner_size = 25
+repeats = range(10)
 
-results = run_parallel_simulations(inner_size_range, num_steps, rule, dimension) #run the parallel simulations of the automata
+results = run_parallel_simulations(inner_size_range, num_steps, rule, dimension)
 
 
-for i, result in enumerate(results): #For all the results in the results array
-    df_result = pd.DataFrame(result) #make a data frame of each 
-    df_result['initial_size'] = inner_size_range[i]  # Label with initial size
-    all_dfs.append(df_result) #Add each data frame
+for i, result in enumerate(results):
+    df_result = pd.DataFrame(result)
+    df_result['initial_size'] = repeats[i]  # Label with initial size
+    all_dfs.append(df_result)
     
-df_all_entropy = pd.concat(all_dfs, ignore_index=True) #Combine them all into one chunky dataframe
+df_all_entropy = pd.concat(all_dfs, ignore_index=True)
 
-file_path = r'C:\Users\benja\OneDrive\Desktop\ConwaysGameALLEntropy.xlsx' #This also needs changed based on your local machine name
+file_path = r'C:\Users\benja\OneDrive\Desktop\ConwaysGame67pEntropy.xlsx' 
 
 # Save the DataFrame to an Excel file
 df_all_entropy.to_excel(file_path, index=False)
 
-print(f'File saved to: {file_path}') #lets you know it's done.
+print(f'File saved to: {file_path}')
